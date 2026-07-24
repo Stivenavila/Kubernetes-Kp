@@ -76,6 +76,41 @@ enable_karpenter = var.compute_mode == "ec2_karpenter"
 
 ---
 
+## 2.b Red: crear VPC o reusar una existente (`create_vpc`)
+
+| `create_vpc` | Comportamiento | Variables requeridas |
+|---|---|---|
+| `true` (default) | `module.vpc` crea VPC, subnets, NAT, IGW, flow logs. | `vpc_cidr`, `availability_zones` |
+| `false` | No crea red. Lee IDs existentes y los inyecta a EKS. | `existing_vpc_id`, `existing_private_subnet_ids`, `existing_public_subnet_ids` |
+
+`locals.tf` resuelve la fuente activa:
+
+```hcl
+vpc_id             = var.create_vpc ? one(module.vpc[*].vpc_id) : var.existing_vpc_id
+private_subnet_ids = var.create_vpc ? one(module.vpc[*].private_subnet_ids) : var.existing_private_subnet_ids
+public_subnet_ids  = var.create_vpc ? one(module.vpc[*].public_subnet_ids)  : var.existing_public_subnet_ids
+```
+
+**Requisito con VPC existente (`create_vpc = false`):** las subnets deben tener los tags
+de discovery de EKS, o el ALB controller y el routing de nodos fallan:
+
+```bash
+# Privadas
+aws ec2 create-tags --resources subnet-aaa subnet-bbb \
+  --tags Key=kubernetes.io/role/internal-elb,Value=1 \
+         Key=kubernetes.io/cluster/<cluster-name>,Value=shared
+# Públicas
+aws ec2 create-tags --resources subnet-ddd subnet-eee \
+  --tags Key=kubernetes.io/role/elb,Value=1 \
+         Key=kubernetes.io/cluster/<cluster-name>,Value=shared
+```
+
+> El `moved{}` en `main.tf` (`module.vpc` → `module.vpc[0]`) migra el state al añadir
+> `count`; si ya tenías la VPC creada por este código, **no** se destruye. Verificar en el
+> `plan` que la VPC existente sale como `moved`, no como `destroy`.
+
+---
+
 ## 3. Variables clave
 
 | Variable | Aplica en | Descripción |

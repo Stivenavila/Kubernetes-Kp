@@ -2,20 +2,25 @@
 ## Root Outputs
 ## =============================================================
 
-# VPC
+# VPC (creada o existente, según create_vpc)
 output "vpc_id" {
-  description = "ID de la VPC."
-  value       = module.vpc.vpc_id
+  description = "ID de la VPC en uso (creada o existente)."
+  value       = local.vpc_id
 }
 
 output "private_subnet_ids" {
-  description = "IDs de las subnets privadas."
-  value       = module.vpc.private_subnet_ids
+  description = "IDs de las subnets privadas en uso."
+  value       = local.private_subnet_ids
 }
 
 output "public_subnet_ids" {
-  description = "IDs de las subnets públicas."
-  value       = module.vpc.public_subnet_ids
+  description = "IDs de las subnets públicas en uso."
+  value       = local.public_subnet_ids
+}
+
+output "vpc_managed_by_terraform" {
+  description = "true si Terraform gestiona la VPC; false si es preexistente."
+  value       = var.create_vpc
 }
 
 # EKS

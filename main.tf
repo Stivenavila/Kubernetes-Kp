@@ -3,11 +3,18 @@
 ## =============================================================
 
 ## -----------------------------------------------------
-## VPC
+## VPC — creada solo si create_vpc = true
 ## -----------------------------------------------------
+
+# Migra el state existente al pasar a index [0] (evita destroy de la VPC).
+moved {
+  from = module.vpc
+  to   = module.vpc[0]
+}
 
 module "vpc" {
   source = "./modules/vpc"
+  count  = var.create_vpc ? 1 : 0
 
   name_prefix        = local.name_prefix
   vpc_cidr           = var.vpc_cidr
@@ -28,9 +35,9 @@ module "eks" {
   source = "./modules/eks"
 
   name_prefix        = local.name_prefix
-  vpc_id             = module.vpc.vpc_id
-  private_subnet_ids = module.vpc.private_subnet_ids
-  public_subnet_ids  = module.vpc.public_subnet_ids
+  vpc_id             = local.vpc_id
+  private_subnet_ids = local.private_subnet_ids
+  public_subnet_ids  = local.public_subnet_ids
 
   cluster_version     = var.eks_cluster_version
   node_instance_types = var.eks_node_instance_types

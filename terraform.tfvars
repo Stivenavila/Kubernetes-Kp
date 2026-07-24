@@ -1,9 +1,21 @@
-project_name       = "eks-platform"
-environment        = "dev"
-aws_region         = "us-east-1"
+project_name = "eks-platform"
+environment  = "dev"
+aws_region   = "us-east-1"
+
+# ---- Red ----
+# create_vpc = true  -> Terraform crea la VPC (usa vpc_cidr / availability_zones).
+# create_vpc = false -> reusa VPC existente (rellena existing_* y las subnets
+#                       DEBEN tener tags kubernetes.io/role/elb | internal-elb
+#                       y kubernetes.io/cluster/<cluster> = shared).
+create_vpc         = true
 vpc_cidr           = "10.0.0.0/16"
 availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
 single_nat_gateway = true
+
+# Solo si create_vpc = false:
+# existing_vpc_id             = "vpc-0abc123..."
+# existing_private_subnet_ids = ["subnet-aaa", "subnet-bbb", "subnet-ccc"]
+# existing_public_subnet_ids  = ["subnet-ddd", "subnet-eee", "subnet-fff"]
 
 # EKS
 # compute_mode: "fargate" | "ec2_managed" | "ec2_karpenter"

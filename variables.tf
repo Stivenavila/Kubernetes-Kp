@@ -32,8 +32,50 @@ variable "aws_region" {
 ## Networking
 ## -----------------------------------------------------
 
+variable "create_vpc" {
+  description = <<-EOT
+    true  = Terraform crea la VPC (module.vpc).
+    false = Reusa una VPC existente vía existing_vpc_id + existing_*_subnet_ids.
+  EOT
+  type        = bool
+  default     = true
+}
+
+variable "existing_vpc_id" {
+  description = "ID de la VPC existente. Requerido si create_vpc = false."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.create_vpc || can(regex("^vpc-[0-9a-f]+$", var.existing_vpc_id))
+    error_message = "Si create_vpc = false, existing_vpc_id debe ser un vpc-id válido (vpc-xxxx)."
+  }
+}
+
+variable "existing_private_subnet_ids" {
+  description = "IDs de subnets privadas existentes. Requerido si create_vpc = false."
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition     = var.create_vpc || length(var.existing_private_subnet_ids) >= 2
+    error_message = "Si create_vpc = false, se requieren al menos 2 subnets privadas (multi-AZ)."
+  }
+}
+
+variable "existing_public_subnet_ids" {
+  description = "IDs de subnets públicas existentes. Requerido si create_vpc = false y usas LBs públicos."
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition     = var.create_vpc || length(var.existing_public_subnet_ids) >= 2
+    error_message = "Si create_vpc = false, se requieren al menos 2 subnets públicas (multi-AZ)."
+  }
+}
+
 variable "vpc_cidr" {
-  description = "CIDR block principal de la VPC."
+  description = "CIDR block principal de la VPC. Solo aplica si create_vpc = true."
   type        = string
   default     = "10.0.0.0/16"
 

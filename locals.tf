@@ -8,6 +8,14 @@ locals {
   enable_ec2_nodes = contains(["ec2_managed", "ec2_karpenter"], var.compute_mode)
   enable_karpenter = var.compute_mode == "ec2_karpenter"
 
+  # -----------------------------------------------------
+  # Fuente de red: VPC creada (module.vpc) vs. existente (vars).
+  # one(splat) evita error de índice cuando el módulo tiene count = 0.
+  # -----------------------------------------------------
+  vpc_id             = var.create_vpc ? one(module.vpc[*].vpc_id) : var.existing_vpc_id
+  private_subnet_ids = var.create_vpc ? one(module.vpc[*].private_subnet_ids) : var.existing_private_subnet_ids
+  public_subnet_ids  = var.create_vpc ? one(module.vpc[*].public_subnet_ids) : var.existing_public_subnet_ids
+
   common_tags = merge(
     {
       Project     = var.project_name
