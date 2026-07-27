@@ -151,7 +151,7 @@ resource "aws_eks_fargate_profile" "system" {
   count = var.enable_fargate ? 1 : 0
 
   cluster_name           = aws_eks_cluster.this.name
-  fargate_profile_name   = "${var.name_prefix}-system"
+  fargate_profile_name   = "${replace(var.name_prefix, "/^eks-/", "")}-system"
   pod_execution_role_arn = aws_iam_role.fargate[0].arn
   subnet_ids             = var.private_subnet_ids
 
@@ -178,7 +178,7 @@ resource "aws_eks_fargate_profile" "workload" {
   count = var.enable_fargate ? 1 : 0
 
   cluster_name           = aws_eks_cluster.this.name
-  fargate_profile_name   = "${var.name_prefix}-workload"
+  fargate_profile_name   = "${replace(var.name_prefix, "/^eks-/", "")}-workload"
   pod_execution_role_arn = aws_iam_role.fargate[0].arn
   subnet_ids             = var.private_subnet_ids
 
