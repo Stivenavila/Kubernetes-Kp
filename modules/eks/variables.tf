@@ -71,3 +71,19 @@ variable "fargate_system_namespaces" {
   type        = list(string)
   default     = ["kube-system"]
 }
+
+variable "cluster_support_type" {
+  description = <<-EOT
+    Tipo de soporte del cluster EKS:
+      - "STANDARD":  Solo Standard Support. El cluster NO pasa automáticamente a Extended Support.
+      - "EXTENDED":  (default AWS) Entra en Extended Support automáticamente al finalizar Standard.
+    Más info: https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html
+  EOT
+  type        = string
+  default     = "EXTENDED"
+
+  validation {
+    condition     = contains(["STANDARD", "EXTENDED"], var.cluster_support_type)
+    error_message = "cluster_support_type debe ser STANDARD o EXTENDED."
+  }
+}

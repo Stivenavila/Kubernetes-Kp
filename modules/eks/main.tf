@@ -14,6 +14,10 @@ resource "aws_eks_cluster" "this" {
     security_group_ids      = [aws_security_group.cluster.id]
   }
 
+  upgrade_policy {
+    support_type = var.cluster_support_type
+  }
+
   encryption_config {
     provider {
       key_arn = aws_kms_key.eks.arn

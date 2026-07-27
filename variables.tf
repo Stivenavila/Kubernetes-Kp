@@ -112,6 +112,21 @@ variable "eks_cluster_version" {
   default     = "1.36"
 }
 
+variable "eks_support_type" {
+  description = <<-EOT
+    Tipo de soporte del cluster EKS:
+      - "STANDARD":  Solo Standard Support. Sin cargos extra por versión obsoleta.
+      - "EXTENDED":  (default AWS) Pasa automáticamente a Extended Support ($0.60/hr extra).
+  EOT
+  type        = string
+  default     = "EXTENDED"
+
+  validation {
+    condition     = contains(["STANDARD", "EXTENDED"], var.eks_support_type)
+    error_message = "eks_support_type debe ser STANDARD o EXTENDED."
+  }
+}
+
 variable "eks_node_instance_types" {
   description = "Instance types para el managed node group."
   type        = list(string)
