@@ -47,3 +47,16 @@ output "cluster_primary_security_group_id" {
   description = "Primary security group del cluster (auto-created by EKS)."
   value       = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
 }
+
+output "node_group_ready" {
+  description = "Marker que indica que los nodos EC2 y CoreDNS están operativos. Usar como depends_on para Helm releases."
+  value       = true
+
+  depends_on = [
+    aws_eks_node_group.main,
+    aws_eks_fargate_profile.system,
+    aws_eks_addon.coredns,
+    aws_eks_addon.vpc_cni,
+    aws_eks_addon.kube_proxy,
+  ]
+}

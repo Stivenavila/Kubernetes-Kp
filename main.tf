@@ -83,12 +83,16 @@ module "eks" {
 module "helm_addons" {
   source = "./modules/helm-addons"
 
+  enable_argocd = var.enable_argocd
+  enable_cilium = var.enable_cilium
+
   argocd_chart_version  = var.argocd_chart_version
   cilium_chart_version  = var.cilium_chart_version
   argocd_admin_password = var.argocd_admin_password_bcrypt
   ha_enabled            = var.environment == "prod" ? true : false
 
-  depends_on = [module.eks]
+  # Espera a que nodos + CoreDNS + VPC CNI estén operativos antes de instalar Helm charts
+  depends_on = [module.eks.node_group_ready]
 }
 
 ## -----------------------------------------------------
@@ -133,6 +137,13 @@ module "platform_addons" {
 
   enable_fargate = local.is_fargate
 
+  # Feature flags
+  enable_metrics_server    = var.enable_metrics_server
+  enable_vpa               = var.enable_vpa
+  enable_external_dns      = var.enable_external_dns
+  enable_cert_manager      = var.enable_cert_manager
+  enable_storage_class_gp3 = var.enable_storage_class_gp3
+
   # Chart versions
   vpa_chart_version            = var.vpa_chart_version
   external_dns_chart_version   = var.external_dns_chart_version
@@ -145,5 +156,6 @@ module "platform_addons" {
   # Cert-Manager
   letsencrypt_email = var.letsencrypt_email
 
-  depends_on = [module.eks]
+  # Espera a que Cilium (CNI/network policy) esté operativo antes de desplegar addons de plataforma
+  depends_on = [module.helm_addons.cilium_ready]
 }

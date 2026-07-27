@@ -19,6 +19,8 @@
 ## -----------------------------------------------------
 
 resource "helm_release" "metrics_server" {
+  count = var.enable_metrics_server ? 1 : 0
+
   name       = "metrics-server"
   repository = "https://kubernetes-sigs.github.io/metrics-server"
   chart      = "metrics-server"
@@ -51,6 +53,8 @@ resource "helm_release" "metrics_server" {
 ## -----------------------------------------------------
 
 resource "helm_release" "vpa" {
+  count = var.enable_vpa ? 1 : 0
+
   name       = "vpa"
   repository = "https://charts.fairwinds.com/stable"
   chart      = "vpa"
@@ -93,6 +97,8 @@ resource "helm_release" "vpa" {
 ## -----------------------------------------------------
 
 resource "kubernetes_namespace" "external_dns" {
+  count = var.enable_external_dns ? 1 : 0
+
   metadata {
     name = "external-dns"
     labels = {
@@ -102,13 +108,15 @@ resource "kubernetes_namespace" "external_dns" {
 }
 
 resource "helm_release" "external_dns" {
+  count = var.enable_external_dns ? 1 : 0
+
   name       = "external-dns"
   repository = "https://kubernetes-sigs.github.io/external-dns"
   chart      = "external-dns"
   version    = var.external_dns_chart_version
-  namespace  = kubernetes_namespace.external_dns.metadata[0].name
+  namespace  = kubernetes_namespace.external_dns[0].metadata[0].name
 
-  timeout         = 300
+  timeout         = 600
   atomic          = true
   cleanup_on_fail = true
 
@@ -125,7 +133,7 @@ resource "helm_release" "external_dns" {
       ]
       serviceAccount = {
         annotations = {
-          "eks.amazonaws.com/role-arn" = aws_iam_role.external_dns.arn
+          "eks.amazonaws.com/role-arn" = aws_iam_role.external_dns[0].arn
         }
       }
       domainFilters = var.domain_filters
@@ -145,6 +153,8 @@ resource "helm_release" "external_dns" {
 ## -----------------------------------------------------
 
 resource "kubernetes_namespace" "cert_manager" {
+  count = var.enable_cert_manager ? 1 : 0
+
   metadata {
     name = "cert-manager"
     labels = {
@@ -154,13 +164,15 @@ resource "kubernetes_namespace" "cert_manager" {
 }
 
 resource "helm_release" "cert_manager" {
+  count = var.enable_cert_manager ? 1 : 0
+
   name       = "cert-manager"
   repository = "https://charts.jetstack.io"
   chart      = "cert-manager"
   version    = var.cert_manager_chart_version
-  namespace  = kubernetes_namespace.cert_manager.metadata[0].name
+  namespace  = kubernetes_namespace.cert_manager[0].metadata[0].name
 
-  timeout         = 300
+  timeout         = 600
   atomic          = true
   cleanup_on_fail = true
 
@@ -184,7 +196,7 @@ resource "helm_release" "cert_manager" {
       }
       serviceAccount = {
         annotations = {
-          "eks.amazonaws.com/role-arn" = aws_iam_role.cert_manager.arn
+          "eks.amazonaws.com/role-arn" = aws_iam_role.cert_manager[0].arn
         }
       }
       securityContext = {
@@ -207,7 +219,7 @@ resource "helm_release" "cert_manager" {
 ## ClusterIssuer for Let's Encrypt (staging + prod)
 ## Se usa kubectl_manifest para evitar bloqueos por finalizers en destroy.
 resource "kubectl_manifest" "letsencrypt_staging" {
-  count = var.letsencrypt_email != "" ? 1 : 0
+  count = var.enable_cert_manager && var.letsencrypt_email != "" ? 1 : 0
 
   yaml_body = yamlencode({
     apiVersion = "cert-manager.io/v1"
@@ -237,7 +249,7 @@ resource "kubectl_manifest" "letsencrypt_staging" {
 }
 
 resource "kubectl_manifest" "letsencrypt_prod" {
-  count = var.letsencrypt_email != "" ? 1 : 0
+  count = var.enable_cert_manager && var.letsencrypt_email != "" ? 1 : 0
 
   yaml_body = yamlencode({
     apiVersion = "cert-manager.io/v1"
@@ -271,6 +283,8 @@ resource "kubectl_manifest" "letsencrypt_prod" {
 ## -----------------------------------------------------
 
 resource "kubernetes_storage_class" "gp3" {
+  count = var.enable_storage_class_gp3 ? 1 : 0
+
   metadata {
     name = "gp3"
     annotations = {

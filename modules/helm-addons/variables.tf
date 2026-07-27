@@ -21,3 +21,19 @@ variable "ha_enabled" {
   type        = bool
   default     = false
 }
+
+## -----------------------------------------------------
+## Feature Flags
+## -----------------------------------------------------
+
+variable "enable_argocd" {
+  description = "Instalar ArgoCD via Helm."
+  type        = bool
+  default     = true
+}
+
+variable "enable_cilium" {
+  description = "Instalar Cilium (CNI + Gateway API + Hubble) via Helm."
+  type        = bool
+  default     = true
+}

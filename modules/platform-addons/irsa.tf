@@ -4,6 +4,8 @@
 
 # External-DNS IRSA
 resource "aws_iam_role" "external_dns" {
+  count = var.enable_external_dns ? 1 : 0
+
   name = "${var.name_prefix}-external-dns"
 
   assume_role_policy = jsonencode({
@@ -27,8 +29,10 @@ resource "aws_iam_role" "external_dns" {
 }
 
 resource "aws_iam_role_policy" "external_dns" {
+  count = var.enable_external_dns ? 1 : 0
+
   name = "${var.name_prefix}-external-dns"
-  role = aws_iam_role.external_dns.id
+  role = aws_iam_role.external_dns[0].id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -55,6 +59,8 @@ resource "aws_iam_role_policy" "external_dns" {
 
 # Cert-Manager IRSA
 resource "aws_iam_role" "cert_manager" {
+  count = var.enable_cert_manager ? 1 : 0
+
   name = "${var.name_prefix}-cert-manager"
 
   assume_role_policy = jsonencode({
@@ -78,8 +84,10 @@ resource "aws_iam_role" "cert_manager" {
 }
 
 resource "aws_iam_role_policy" "cert_manager" {
+  count = var.enable_cert_manager ? 1 : 0
+
   name = "${var.name_prefix}-cert-manager"
-  role = aws_iam_role.cert_manager.id
+  role = aws_iam_role.cert_manager[0].id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -109,5 +117,3 @@ resource "aws_iam_role_policy" "cert_manager" {
     ]
   })
 }
-
-

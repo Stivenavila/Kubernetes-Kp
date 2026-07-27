@@ -40,6 +40,40 @@ variable "enable_fargate" {
 }
 
 ## -----------------------------------------------------
+## Feature Flags
+## -----------------------------------------------------
+
+variable "enable_metrics_server" {
+  description = "Instalar Metrics Server via Helm (requerido para HPA)."
+  type        = bool
+  default     = true
+}
+
+variable "enable_vpa" {
+  description = "Instalar Vertical Pod Autoscaler via Helm."
+  type        = bool
+  default     = true
+}
+
+variable "enable_external_dns" {
+  description = "Instalar External-DNS via Helm."
+  type        = bool
+  default     = true
+}
+
+variable "enable_cert_manager" {
+  description = "Instalar Cert-Manager via Helm."
+  type        = bool
+  default     = true
+}
+
+variable "enable_storage_class_gp3" {
+  description = "Crear StorageClass gp3 como default."
+  type        = bool
+  default     = true
+}
+
+## -----------------------------------------------------
 ## Chart Versions
 ## -----------------------------------------------------
 

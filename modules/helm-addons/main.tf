@@ -3,6 +3,8 @@
 ## -----------------------------------------------------
 
 resource "kubernetes_namespace" "argocd" {
+  count = var.enable_argocd ? 1 : 0
+
   metadata {
     name = "argocd"
     labels = {
@@ -17,20 +19,26 @@ resource "kubernetes_namespace" "argocd" {
 
 ## -----------------------------------------------------
 ## ArgoCD — Helm Release
+## Depende de Cilium para garantizar que la CNI/network policy
+## esté operativa antes de desplegar pods de ArgoCD.
 ## -----------------------------------------------------
 
 resource "helm_release" "argocd" {
+  count = var.enable_argocd ? 1 : 0
+
   name       = "argocd"
   repository = "https://argoproj.github.io/argo-helm"
   chart      = "argo-cd"
   version    = var.argocd_chart_version
-  namespace  = kubernetes_namespace.argocd.metadata[0].name
+  namespace  = kubernetes_namespace.argocd[0].metadata[0].name
 
-  timeout         = 600
+  timeout         = 900
   atomic          = true
   cleanup_on_fail = true
   wait            = true
   wait_for_jobs   = true
+
+  depends_on = [helm_release.cilium]
 
   ## Evita que queden CRDs huérfanos en destroy
   ## El chart de ArgoCD usa resource-policy:keep por defecto en sus CRDs.
@@ -104,13 +112,15 @@ resource "helm_release" "argocd" {
 ## -----------------------------------------------------
 
 resource "helm_release" "cilium" {
+  count = var.enable_cilium ? 1 : 0
+
   name       = "cilium"
   repository = "https://helm.cilium.io/"
   chart      = "cilium"
   version    = var.cilium_chart_version
   namespace  = "kube-system"
 
-  timeout         = 600
+  timeout         = 900
   atomic          = false
   cleanup_on_fail = false
   wait            = true
