@@ -55,6 +55,7 @@ output "node_group_ready" {
   depends_on = [
     aws_eks_node_group.main,
     aws_eks_fargate_profile.system,
+    aws_eks_fargate_profile.addons,
     aws_eks_addon.coredns,
     aws_eks_addon.vpc_cni,
     aws_eks_addon.kube_proxy,

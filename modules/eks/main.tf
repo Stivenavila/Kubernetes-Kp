@@ -201,6 +201,31 @@ resource "aws_eks_fargate_profile" "workload" {
   depends_on = [aws_eks_fargate_profile.system]
 }
 
+# Profile de ADDONS (argocd, external-dns, cert-manager, etc.)
+# Sin este profile, los pods de addons quedan en Pending en modo Fargate puro.
+resource "aws_eks_fargate_profile" "addons" {
+  count = var.enable_fargate && length(var.fargate_addon_namespaces) > 0 ? 1 : 0
+
+  cluster_name           = aws_eks_cluster.this.name
+  fargate_profile_name   = "${replace(var.name_prefix, "/^eks-/", "")}-addons"
+  pod_execution_role_arn = aws_iam_role.fargate[0].arn
+  subnet_ids             = var.private_subnet_ids
+
+  dynamic "selector" {
+    for_each = var.fargate_addon_namespaces
+    content {
+      namespace = selector.value
+    }
+  }
+
+  tags = {
+    Name = "${var.name_prefix}-fargate-addons"
+  }
+
+  # EKS no permite crear profiles en paralelo.
+  depends_on = [aws_eks_fargate_profile.workload]
+}
+
 ## -----------------------------------------------------
 ## OIDC Provider (for IRSA)
 ## -----------------------------------------------------

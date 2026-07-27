@@ -66,6 +66,12 @@ variable "fargate_namespaces" {
   default     = []
 }
 
+variable "fargate_addon_namespaces" {
+  description = "Namespaces de addons de plataforma para Fargate (argocd, external-dns, cert-manager, etc.)."
+  type        = list(string)
+  default     = []
+}
+
 variable "fargate_system_namespaces" {
   description = "Namespaces de sistema para el Fargate profile de sistema (CoreDNS, addons)."
   type        = list(string)

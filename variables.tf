@@ -115,8 +115,8 @@ variable "eks_cluster_version" {
 variable "eks_support_type" {
   description = <<-EOT
     Tipo de soporte del cluster EKS:
-      - "STANDARD":  Solo Standard Support. Sin cargos extra por versión obsoleta.
-      - "EXTENDED":  (default AWS) Pasa automáticamente a Extended Support ($0.60/hr extra).
+      - "STANDARD":  Solo Standard Support. Sin cargos extra por version obsoleta.
+      - "EXTENDED":  (default AWS) Pasa automaticamente a Extended Support ($0.60/hr extra).
   EOT
   type        = string
   default     = "EXTENDED"
@@ -183,6 +183,16 @@ variable "fargate_namespaces" {
   description = "Namespaces de aplicación que correrán en Fargate (compute_mode = fargate)."
   type        = list(string)
   default     = ["default", "fargate-workloads"]
+}
+
+variable "fargate_addon_namespaces" {
+  description = <<-EOT
+    Namespaces de addons de plataforma que correrán en Fargate.
+    Incluir los namespaces donde se despliegan ArgoCD, External-DNS, Cert-Manager, etc.
+    Solo aplica si compute_mode = fargate.
+  EOT
+  type        = list(string)
+  default     = ["argocd", "external-dns", "cert-manager"]
 }
 
 variable "fargate_system_namespaces" {

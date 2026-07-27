@@ -123,6 +123,8 @@ resource "helm_release" "cilium" {
   timeout         = 900
   atomic          = false
   cleanup_on_fail = false
+  replace         = true
+  force_update    = true
   wait            = true
 
   values = [

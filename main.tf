@@ -74,6 +74,7 @@ module "eks" {
   enable_ec2_nodes          = local.enable_ec2_nodes
   enable_fargate            = local.is_fargate
   fargate_namespaces        = var.fargate_namespaces
+  fargate_addon_namespaces  = var.fargate_addon_namespaces
   fargate_system_namespaces = var.fargate_system_namespaces
 }
 
