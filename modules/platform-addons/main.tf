@@ -96,17 +96,6 @@ resource "helm_release" "vpa" {
 ## External-DNS
 ## -----------------------------------------------------
 
-resource "kubernetes_namespace" "external_dns" {
-  count = var.enable_external_dns ? 1 : 0
-
-  metadata {
-    name = "external-dns"
-    labels = {
-      "app.kubernetes.io/managed-by" = "terraform"
-    }
-  }
-}
-
 resource "helm_release" "external_dns" {
   count = var.enable_external_dns ? 1 : 0
 
@@ -114,7 +103,7 @@ resource "helm_release" "external_dns" {
   repository = "https://kubernetes-sigs.github.io/external-dns"
   chart      = "external-dns"
   version    = var.external_dns_chart_version
-  namespace  = kubernetes_namespace.external_dns[0].metadata[0].name
+  namespace  = "kube-system"
 
   timeout         = 600
   atomic          = true
@@ -152,17 +141,6 @@ resource "helm_release" "external_dns" {
 ## Cert-Manager
 ## -----------------------------------------------------
 
-resource "kubernetes_namespace" "cert_manager" {
-  count = var.enable_cert_manager ? 1 : 0
-
-  metadata {
-    name = "cert-manager"
-    labels = {
-      "app.kubernetes.io/managed-by" = "terraform"
-    }
-  }
-}
-
 resource "helm_release" "cert_manager" {
   count = var.enable_cert_manager ? 1 : 0
 
@@ -170,7 +148,7 @@ resource "helm_release" "cert_manager" {
   repository = "https://charts.jetstack.io"
   chart      = "cert-manager"
   version    = var.cert_manager_chart_version
-  namespace  = kubernetes_namespace.cert_manager[0].metadata[0].name
+  namespace  = "kube-system"
 
   timeout         = 600
   atomic          = true
@@ -189,30 +167,35 @@ resource "helm_release" "cert_manager" {
   }
 
   values = [
-    yamlencode({
-      crds = {
-        enabled = true
-        keep    = false
-      }
-      serviceAccount = {
-        annotations = {
-          "eks.amazonaws.com/role-arn" = aws_iam_role.cert_manager[0].arn
+    yamlencode(merge(
+      {
+        crds = {
+          enabled = true
+          keep    = false
+        }
+        serviceAccount = {
+          annotations = {
+            "eks.amazonaws.com/role-arn" = aws_iam_role.cert_manager[0].arn
+          }
+        }
+        resources = {
+          requests = { cpu = "50m", memory = "64Mi" }
+          limits   = { cpu = "200m", memory = "256Mi" }
+        }
+        prometheus = {
+          enabled = true
+          servicemonitor = {
+            enabled = false
+          }
+        }
+      },
+      # Fargate no soporta fsGroup arbitrario — solo se aplica en EC2
+      var.enable_fargate ? {} : {
+        securityContext = {
+          fsGroup = 1001
         }
       }
-      securityContext = {
-        fsGroup = 1001
-      }
-      resources = {
-        requests = { cpu = "50m", memory = "64Mi" }
-        limits   = { cpu = "200m", memory = "256Mi" }
-      }
-      prometheus = {
-        enabled = true
-        servicemonitor = {
-          enabled = false
-        }
-      }
-    })
+    ))
   ]
 }
 

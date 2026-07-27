@@ -19,7 +19,7 @@ resource "aws_iam_role" "external_dns" {
       Condition = {
         StringEquals = {
           "${var.oidc_provider_url}:aud" = "sts.amazonaws.com"
-          "${var.oidc_provider_url}:sub" = "system:serviceaccount:external-dns:external-dns"
+          "${var.oidc_provider_url}:sub" = "system:serviceaccount:kube-system:external-dns"
         }
       }
     }]
@@ -74,7 +74,7 @@ resource "aws_iam_role" "cert_manager" {
       Condition = {
         StringEquals = {
           "${var.oidc_provider_url}:aud" = "sts.amazonaws.com"
-          "${var.oidc_provider_url}:sub" = "system:serviceaccount:cert-manager:cert-manager"
+          "${var.oidc_provider_url}:sub" = "system:serviceaccount:kube-system:cert-manager"
         }
       }
     }]

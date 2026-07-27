@@ -188,11 +188,12 @@ variable "fargate_namespaces" {
 variable "fargate_addon_namespaces" {
   description = <<-EOT
     Namespaces de addons de plataforma que correrán en Fargate.
-    Incluir los namespaces donde se despliegan ArgoCD, External-DNS, Cert-Manager, etc.
+    Incluir los namespaces donde se despliegan ArgoCD, etc.
+    cert-manager y external-dns se instalan en kube-system (cubierto por fargate_system_namespaces).
     Solo aplica si compute_mode = fargate.
   EOT
   type        = list(string)
-  default     = ["argocd", "external-dns", "cert-manager"]
+  default     = ["argocd"]
 }
 
 variable "fargate_system_namespaces" {

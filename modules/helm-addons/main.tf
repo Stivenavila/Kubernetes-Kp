@@ -96,6 +96,12 @@ resource "helm_release" "argocd" {
       applicationSet = {
         enabled = true
       }
+      redis = {
+        resources = {
+          requests = { cpu = "100m", memory = "128Mi" }
+          limits   = { cpu = "250m", memory = "256Mi" }
+        }
+      }
       ha = {
         enabled = var.ha_enabled
       }
