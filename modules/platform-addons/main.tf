@@ -150,9 +150,9 @@ resource "helm_release" "cert_manager" {
   version    = var.cert_manager_chart_version
   namespace  = "kube-system"
 
-  timeout         = 600
-  atomic          = true
-  cleanup_on_fail = true
+  timeout         = 900
+  atomic          = false
+  cleanup_on_fail = false
 
   ## Limpia CRDs de cert-manager al destruir (resource-policy:keep los deja huérfanos)
   provisioner "local-exec" {

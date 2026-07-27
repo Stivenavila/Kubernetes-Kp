@@ -49,7 +49,19 @@ apply: ## Aplica el plan guardado ($(PLAN))
 	terraform apply $(PLAN)
 
 .PHONY: destroy
-destroy: ## Destruye toda la plataforma (CUIDADO)
+destroy: ## Destruye toda la plataforma en orden seguro (evita ciclos Fargate/provider)
+	@echo "==> Paso 1: Destruir recursos kubernetes/helm (platform_addons + helm_addons)"
+	terraform destroy $(VAR_MODE) \
+		-target=module.platform_addons \
+		-target=module.helm_addons
+	@echo "==> Paso 2: Destruir Karpenter (si existe)"
+	terraform destroy $(VAR_MODE) \
+		-target=module.karpenter || true
+	@echo "==> Paso 3: Destruir EKS + VPC + resto"
+	terraform destroy $(VAR_MODE)
+
+.PHONY: destroy-force
+destroy-force: ## Destruye TODO de golpe (puede fallar con ciclo en Fargate)
 	terraform destroy $(VAR_MODE)
 
 # ---------- Switch de modo (plan → revisar → apply) ----------

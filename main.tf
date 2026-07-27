@@ -161,3 +161,21 @@ module "platform_addons" {
   # Espera a que Cilium (CNI/network policy) esté operativo antes de desplegar addons de plataforma
   depends_on = [module.helm_addons.cilium_ready]
 }
+
+## -----------------------------------------------------
+## Destroy Ordering Notes
+## -----------------------------------------------------
+## En modo Fargate, existe un ciclo inherente de Terraform al hacer
+## `terraform destroy` completo:
+##   provider[kubernetes] → module.eks outputs → aws_eks_cluster
+##   → aws_eks_fargate_profile → (back to provider for namespace destroy)
+##
+## Para evitarlo, usar `make destroy` que ejecuta destroy en 3 pasos:
+##   1. Destruye platform_addons + helm_addons (recursos kubernetes)
+##   2. Destruye Karpenter
+##   3. Destruye EKS + VPC + resto
+##
+## Si hay recursos fantasma en el state (ej: kubernetes_namespace.external_dns
+## que ya no está en código), removerlos manualmente:
+##   terraform state rm 'module.platform_addons.kubernetes_namespace.external_dns[0]'
+## -----------------------------------------------------

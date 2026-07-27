@@ -32,9 +32,9 @@ resource "helm_release" "argocd" {
   version    = var.argocd_chart_version
   namespace  = kubernetes_namespace.argocd[0].metadata[0].name
 
-  timeout         = 900
-  atomic          = true
-  cleanup_on_fail = true
+  timeout         = 1200
+  atomic          = false
+  cleanup_on_fail = false
   wait            = true
   wait_for_jobs   = true
 
