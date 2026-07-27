@@ -47,8 +47,8 @@ variable "existing_vpc_id" {
   default     = ""
 
   validation {
-    condition     = var.create_vpc || can(regex("^vpc-[0-9a-f]+$", var.existing_vpc_id))
-    error_message = "Si create_vpc = false, existing_vpc_id debe ser un vpc-id válido (vpc-xxxx)."
+    condition     = var.existing_vpc_id == "" || can(regex("^vpc-[0-9a-f]+$", var.existing_vpc_id))
+    error_message = "existing_vpc_id debe ser vacío o un vpc-id válido (vpc-xxxx)."
   }
 }
 
@@ -58,8 +58,8 @@ variable "existing_private_subnet_ids" {
   default     = []
 
   validation {
-    condition     = var.create_vpc || length(var.existing_private_subnet_ids) >= 2
-    error_message = "Si create_vpc = false, se requieren al menos 2 subnets privadas (multi-AZ)."
+    condition     = length(var.existing_private_subnet_ids) == 0 || length(var.existing_private_subnet_ids) >= 2
+    error_message = "existing_private_subnet_ids debe ser vacío o contener al menos 2 subnets."
   }
 }
 
@@ -69,8 +69,8 @@ variable "existing_public_subnet_ids" {
   default     = []
 
   validation {
-    condition     = var.create_vpc || length(var.existing_public_subnet_ids) >= 2
-    error_message = "Si create_vpc = false, se requieren al menos 2 subnets públicas (multi-AZ)."
+    condition     = length(var.existing_public_subnet_ids) == 0 || length(var.existing_public_subnet_ids) >= 2
+    error_message = "existing_public_subnet_ids debe ser vacío o contener al menos 2 subnets."
   }
 }
 

@@ -3,6 +3,29 @@
 ## =============================================================
 
 ## -----------------------------------------------------
+## Variable Cross-Validation
+## -----------------------------------------------------
+
+resource "terraform_data" "validate_network_inputs" {
+  lifecycle {
+    precondition {
+      condition     = var.create_vpc || (var.existing_vpc_id != "" && can(regex("^vpc-[0-9a-f]+$", var.existing_vpc_id)))
+      error_message = "Si create_vpc = false, se debe proporcionar un existing_vpc_id válido (vpc-xxxx)."
+    }
+
+    precondition {
+      condition     = var.create_vpc || length(var.existing_private_subnet_ids) >= 2
+      error_message = "Si create_vpc = false, se deben proporcionar al menos 2 subnets privadas en existing_private_subnet_ids."
+    }
+
+    precondition {
+      condition     = var.create_vpc || length(var.existing_public_subnet_ids) >= 2
+      error_message = "Si create_vpc = false, se deben proporcionar al menos 2 subnets públicas en existing_public_subnet_ids."
+    }
+  }
+}
+
+## -----------------------------------------------------
 ## VPC — creada solo si create_vpc = true
 ## -----------------------------------------------------
 
