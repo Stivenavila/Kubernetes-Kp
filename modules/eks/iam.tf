@@ -90,11 +90,6 @@ resource "aws_iam_role" "fargate" {
       Principal = {
         Service = "eks-fargate-pods.amazonaws.com"
       }
-      Condition = {
-        ArnLike = {
-          "aws:SourceArn" = aws_eks_cluster.this.arn
-        }
-      }
     }]
   })
 
